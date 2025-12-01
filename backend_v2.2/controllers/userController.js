@@ -1,112 +1,82 @@
-const User = require('../models/User');
-const bcrypt = require('bcrypt');
+const User = require("../models/User");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-// 🔓 Login
-const login = async (req, res) => {
-  const { email, password, role } = req.body;
-  try {
-    const user = await User.findOne({ email });
-    if (!user || user.role !== role) {
-      return res.status(403).json({ message: 'Access denied: role mismatch or not found' });
-    }
-
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ message: 'Invalid password' });
-
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    res.status(200).json({ token, role: user.role });
-  } catch (err) {
-    res.status(500).json({ message: 'Login error', err });
-  }
-};
-
-// 📄 Ver perfil propio
-const getProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json({ message: 'Error fetching profile', err });
-  }
-};
-
-// 👨‍🏫 Agregar nota (teacher/admin)
-const addGrade = async (req, res) => {
-  const { studentId } = req.params;
-  const { subject, score } = req.body;
-
-  try {
-    const student = await User.findById(studentId);
-    if (!student || student.role !== 'student') {
-      return res.status(404).json({ message: 'Student not found' });
-    }
-
-    student.grades.push({ subject, score });
-    await student.save();
-
-    res.status(200).json({ message: 'Grade added', grades: student.grades });
-  } catch (err) {
-    res.status(500).json({ message: 'Error adding grade', err });
-  }
-};
-
-// 🔄 CRUD adicional para admin
-const getAllUsers = async (req, res) => {
-  const users = await User.find().select('-password');
-  res.status(200).json(users);
-};
-
-const deleteUser = async (req, res) => {
-  try {
-    const deleted = await User.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: 'User not found' });
-    res.status(200).json({ message: 'User deleted' });
-  } catch (err) {
-    res.status(500).json({ message: 'Delete error', err });
-  }
-};
-
-const jwt = require('jsonwebtoken');
-
+// ======================= REGISTER =======================
 const register = async (req, res) => {
-  const { email, password, role, name } = req.body;
   try {
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(409).json({ message: 'Email already registered' });
+    let { name, email, password, role } = req.body;
 
-    const hashed = await bcrypt.hash(password, 10);
+    if (!name || !email || !password || !role)
+      return res.status(400).json({ error: "Campos obligatorios" });
 
-    // Guardamos el name también aquí
-    const user = new User({ email, password: hashed, role, name });
-    await user.save();
+    if (password.length < 8)
+      return res.status(400).json({ error: "Min 8 caracteres" });
 
-    // Incluyo name en el payload del token, si quieres usarlo luego
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role, name: user.name },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+      // Sanitizar texto (XSS friendly)
+    name = name.trim().replace(/<[^>]*>?/gm, '');
 
-    res.status(201).json({ token, role: user.role, name: user.name });
-  } catch (err) {
-    res.status(500).json({ message: 'Register error', err });
+    // Hash Password seguro
+    const salt = await bcrypt.genSalt(12);
+    password = await bcrypt.hash(password, salt); 
+
+    const user = await User.create({ name, email, password, role });
+    res.status(201).json({ message: "Usuario registrado con éxito" });
+
+  } catch {
+    return res.status(400).json({ error: "El correo ya está en uso" });
   }
 };
 
+// ======================= LOGIN =======================
+const login = async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
 
-module.exports = {
-  login,
-  getProfile,
-  addGrade,
-  getAllUsers,
-  deleteUser,
-  register
+  if (!user) return res.status(401).json({ error: "Usuario no encontrado" });
+
+  const ok = await bcrypt.compare(password, user.password);
+  if (!ok) return res.status(401).json({ error: "Contraseña incorrecta" });
+
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "2h", algorithm: "HS256" }
+  );
+
+  res.json({ token });
 };
 
+// ======================= PERFIL =======================
+const getProfile = async (req, res) => {
+  const user = await User.findById(req.user.id).select("-password");
+  res.json(user);
+};
+
+// ======================= AGREGAR NOTA (teacher/admin) =======================
+const addGrade = async (req, res) => {
+  const { subject, score } = req.body;
+  const student = await User.findById(req.params.studentId);
+
+  if (!student) return res.status(404).json({ error: "Estudiante no existe" });
+
+  student.grades.push({ subject, score });
+  await student.save();
+
+  res.json({ message: "Nota asignada", student });
+};
+
+// ======================= ADMIN → LISTA TODOS =======================
+const getAllUsers = async (req, res) => {
+  const users = await User.find().select("-password");
+  res.json(users);
+};
+
+// ======================= ADMIN → ELIMINAR USUARIO =======================
+const deleteUser = async (req, res) => {
+  const user = await User.findByIdAndDelete(req.params.id);
+  if (!user) return res.status(404).json({ error: "Usuario no existe" });
+  res.json({ message: "Usuario eliminado" });
+};
+
+module.exports = { register, login, getProfile, addGrade, getAllUsers, deleteUser };

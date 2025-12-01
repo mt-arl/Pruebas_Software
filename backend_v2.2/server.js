@@ -2,8 +2,37 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const xss = require("xss-clean");
+const mongoSanitize = require("express-mongo-sanitize");
 const app = express();
+
+// Seguridad HTTP headers
+app.use(helmet());
+
+// Previene ataques NoSQL Injection
+app.use(mongoSanitize());
+
+// Previene XSS en inputs
+app.use(xss());
+
+// CORS seguro
+app.use(cors({
+  origin: ["http://localhost:3000"], // tu frontend
+  methods: ["GET","POST","PUT","DELETE"],
+  allowedHeaders:["Content-Type","Authorization"]
+}));
+
+// Rate limit para evitar ataques al login y register
+const AuthLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, //10min
+  max: 10,
+  message:{ error: "Demasiados intentos, espere 10 minutos." }
+});
+
+app.use("/api/users/login", AuthLimiter);
+app.use("/api/users/register", AuthLimiter);
 
 // 🛡️ Middleware general
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
@@ -29,7 +58,11 @@ mongoose
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB error:', err));
 
-// 🏁 Inicio del servidor
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server listening on port ${PORT}`));
+// 🚀 Si no es test → iniciar servidor
+if (!process.env.JEST_WORKER_ID) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`🚀 Server listening on port ${PORT}`));
+}
+module.exports = app;
+
 
