@@ -1,0 +1,60 @@
+.admin-container {
+  padding: 2rem;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+.admin-card {
+  background: white;
+  max-width: 800px;
+  margin: auto;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.btn-logout {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.welcome {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+.section {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.section h2 {
+  flex-basis: 200px;
+  margin: 0;
+}
+.section input,
+.section select {
+  flex-grow: 1;
+  padding: 0.4rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+}
+.section button {
+  background: #3182ce;
+  color: white;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.hint {
+  font-size: 0.85rem;
+  color: #718096;
+  margin-top: 0.25rem;
+}

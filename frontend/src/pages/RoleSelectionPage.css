@@ -1,0 +1,52 @@
+.role-selection-page {
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+  padding: 2rem;
+  background: #f1f4f9;
+  min-height: 100vh;
+}
+
+.role-selection-page h1 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.role-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.role-card {
+  background-color: white;
+  border: 3px solid transparent;
+  border-radius: 16px;
+  width: 220px;
+  padding: 2rem 1rem;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.role-card:hover {
+  transform: scale(1.05);
+}
+
+.role-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem auto;
+  color: white;
+}
+
+.role-card h2 {
+  font-size: 1.2rem;
+  color: #444;
+}
