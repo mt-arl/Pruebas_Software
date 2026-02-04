@@ -81,6 +81,7 @@ const deleteGrade = async (req, res) => {
 };
 
 // 📊 Calcular promedio de estudiante
+// 📊 Calcular promedio de estudiante (Corregido)
 const getStudentAverage = async (req, res) => {
   try {
     const studentId = req.params.id;
@@ -96,7 +97,9 @@ const getStudentAverage = async (req, res) => {
     }
 
     const total = grades.reduce((acc, grade) => acc + grade.score, 0);
-    const average = total / grades.length;
+    
+    // Aplicamos redondeo para que coincida con la lógica de negocio y los tests
+    const average = Math.round(total / grades.length); 
 
     res.status(200).json({ student: studentId, average, count: grades.length });
   } catch (err) {

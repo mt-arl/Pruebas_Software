@@ -47,7 +47,7 @@ const reportRoutes = require('./routes/report_routes');
 
 // 🔐 Registro de rutas API
 app.use('/api/users', userRoutes);
-app.use('/api/class', classRoutes);
+app.use('/api/classes', classRoutes);
 app.use('/api/grades', gradeRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/reports', reportRoutes);
