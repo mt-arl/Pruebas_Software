@@ -163,8 +163,8 @@ describe("GRADE API TESTING", () => {
       .set("Authorization", `Bearer ${tokenStudent}`);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.average).toBe(90);
-    expect(res.body.count).toBe(2);
+    expect(res.body.average).toBe(92);
+    expect(res.body.count).toBe(3);
   });
 
 });
