@@ -27,7 +27,7 @@ app.use(cors({
 // Rate limit para evitar ataques al login y register
 const AuthLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, //10min
-  max: 10,
+  max: 700,
   message:{ error: "Demasiados intentos, espere 10 minutos." }
 });
 
@@ -60,9 +60,10 @@ mongoose
 
 // 🚀 Si no es test → iniciar servidor
 if (!process.env.JEST_WORKER_ID) {
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 5001;
   app.listen(PORT, () => console.log(`🚀 Server listening on port ${PORT}`));
 }
+app.get('/', (req, res) => res.send('API de Gestión Académica Funcionando'));
 module.exports = app;
 
 
