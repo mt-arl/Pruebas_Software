@@ -1,0 +1,23 @@
+name: Node.js CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    # Agregamos esta seccion para que todos los comandos se ejecuten dentro de tu carpeta
+    defaults:
+      run:
+        working-directory: backend_v2.2
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - run: npm install
+      - run: npm test -- --coverage
